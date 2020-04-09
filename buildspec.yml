@@ -16,6 +16,15 @@ phases:
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
   build:
     commands:
+      - echo building and testing dev images...
+      - docker-compose up -d --build
+      - docker-compose exec -T users python -m pytest "project/tests" -p no:warnings --cov="project"
+      - docker-compose exec -T users flake8 project
+      - docker-compose exec -T users black project --check
+      - docker-compose exec -T users /bin/sh -c "isort project/*/*.py --check-only"
+      - docker-compose exec -T client npm run lint
+      - docker-compose exec -T client npm run prettier:check
+      - docker-compose exec -T client npm run prettier:write
       - echo building images...
       - >
         docker build \
@@ -30,6 +39,7 @@ phases:
           --build-arg REACT_APP_USERS_SERVICE_URL=$REACT_APP_USERS_SERVICE_URL \
           ./services/client
   post_build:
-    commands:
+    commands
+    - echo pushing prod images to ecr...
     - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/test-driven-users:prod
     - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/test-driven-client:prod
