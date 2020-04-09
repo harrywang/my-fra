@@ -128,3 +128,10 @@ $ docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-west-1.amazonaws.com/test-driven-clien
 ```
 
 the production frontend image is significantly smaller!!
+
+CodeBuild Setup project and
+
+
+- a new IAM role is created `codebuild-my-fra-service-role`
+- add buildspec.yml - don't forget the version information
+-
